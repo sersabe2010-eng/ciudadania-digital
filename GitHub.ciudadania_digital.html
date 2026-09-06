@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autodiagnóstico de Ciudadanía Digital — Dr. Ramírez Aranda</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: #F7F6F2;
+    color: #1a1a10;
+    min-height: 100vh;
+  }
+
+  header {
+    background: #1a3a2a;
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+  }
+  header p.eyebrow {
+    font-family: 'Georgia', serif;
+    font-size: 0.78rem;
+    color: #9FE1CB;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.6rem;
+  }
+  header h1 {
+    font-size: clamp(1.3rem, 4vw, 1.9rem);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.25;
+    max-width: 640px;
+    margin: 0 auto 0.75rem;
+  }
+  header p.sub {
+    font-size: 0.95rem;
+    color: #c8e8da;
+    max-width: 540px;
+    margin: 0 auto;
+    line-height: 1.55;
+  }
+
+  main {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+  }
+
+  .instrucciones {
+    background: #fff;
+    border-left: 4px solid #0F6E56;
+    padding: 1rem 1.25rem;
+    margin-bottom: 2rem;
+    font-size: 0.93rem;
+    color: #444;
+    line-height: 1.6;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .area {
+    margin-bottom: 2rem;
+  }
+
+  .area-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1.5px solid #D3D1C7;
+  }
+  .area-icon { font-size: 1.25rem; }
+  .area-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a3a2a;
+  }
+
+  .pregunta {
+    background: #fff;
+    border: 1px solid #E0DED7;
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    transition: border-color 0.2s;
+  }
+  .pregunta:focus-within { border-color: #0F6E56; }
+
+  .pregunta p {
+    font-size: 0.93rem;
+    line-height: 1.55;
+    color: #2C2C2A;
+    margin-bottom: 0.75rem;
+  }
+
+  .opciones {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .opcion {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    border: 1.5px solid #D3D1C7;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: 'Georgia', serif;
+    background: #F7F6F2;
+    color: #444;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .opcion:hover { border-color: #0F6E56; color: #0F6E56; }
+  .opcion.si.selected { background: #E1F5EE; border-color: #0F6E56; color: #04342C; font-weight: 700; }
+  .opcion.no.selected { background: #FCEBEB; border-color: #A32D2D; color: #501313; font-weight: 700; }
+
+  .btn-calcular {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    margin: 2rem auto 0;
+    padding: 0.9rem 2rem;
+    background: #1a3a2a;
+    color: #fff;
+    font-family: 'Georgia', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-calcular:hover { background: #0F6E56; }
+  .btn-calcular:disabled { background: #aaa; cursor: not-allowed; }
+
+  #resultado {
+    display: none;
+    margin-top: 2rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .resultado-header {
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .resultado-header .puntaje {
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .resultado-header .de12 {
+    font-size: 1rem;
+    opacity: 0.75;
+    margin-top: 0.2rem;
+  }
+  .resultado-header .nivel {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 0.75rem;
+  }
+
+  .resultado-body {
+    background: #fff;
+    padding: 1.25rem 1.5rem;
+  }
+  .resultado-body p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 1rem;
+  }
+
+  .areas-detalle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  @media (max-width: 480px) { .areas-detalle { grid-template-columns: 1fr; } }
+
+  .area-barra {
+    background: #F7F6F2;
+    border-radius: 4px;
+    padding: 0.75rem;
+  }
+  .area-barra-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1a3a2a;
+    margin-bottom: 0.4rem;
+  }
+  .barra-fondo {
+    height: 8px;
+    background: #E0DED7;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .barra-fill {
+    height: 100%;
+    background: #0F6E56;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+  .area-barra-num {
+    font-size: 0.78rem;
+    color: #888;
+    margin-top: 0.3rem;
+    text-align: right;
+  }
+
+  .firma {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid #E0DED7;
+    font-size: 0.8rem;
+    color: #888;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .firma a { color: #0F6E56; text-decoration: none; }
+
+  .nivel-alto { background: #1a3a2a; color: #E1F5EE; }
+  .nivel-medio { background: #085041; color: #E1F5EE; }
+  .nivel-bajo { background: #791F1F; color: #FCEBEB; }
+
+  .aviso-incompleto {
+    display: none;
+    background: #FAEEDA;
+    border: 1px solid #BA7517;
+    color: #412402;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 1rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Dr. José Manuel Ramírez Aranda · rigormetodologico.com</p>
+  <h1>¿Somos ciudadanos digitales o solo usuarios dependientes de una pantalla?</h1>
+  <p class="sub">Antes de juzgar a los jóvenes, midamos nuestra propia consciencia. Autodiagnóstico en 12 preguntas.</p>
+</header>
+
+<main>
+  <div class="instrucciones">
+    <strong>Instrucciones:</strong> Responde <strong>Sí</strong> o <strong>No</strong> a cada afirmación. Al final verás tu puntaje y en qué área tienes más oportunidad de mejora.
+  </div>
+
+  <form id="formulario">
+
+    <!-- ÁREA 1 -->
+    <div class="area">
+      <div class="area-header">
+        <span class="area-icon">🌐</span>
+        <span class="area-title">Área 1 — Autonomía y Autogestión</span>
+      </div>
+
+      <div class="pregunta" data-area="1">
+        <p>1. ¿Logras mantener tu celular guardado o en silencio durante una junta de trabajo o clase sin sentir la necesidad de revisarlo?</p>
+        <div class="opciones">
+          <button type="button" class="opcion si" data-q="1" data-val="1">✓ Sí</button>
+          <button type="button" class="opcion no" data-q="1" data-val="0">✗ No</button>
+        </div>
+      </div>
+
+      <div class="pregunta" data-area="1">
+        <p>2. ¿Decides apagar las notificaciones de tus redes sociales para concentrarte mejor en tus actividades diarias?</p>
+        <div class="opciones">
+          <button type="button" class="opcion si" data-q="2" data-val="1">✓ Sí</button>
+          <button type="button" class="opcion no" data-q="2" data-val="0">✗ No</button>
+        </div>
+      </div>
+
+      <div class="pregunta" data-area="1">
+        <p>3. ¿Eres consciente de la cantidad exacta de horas que pasas frente a la pantalla cada día?</p>
+        <div class="opciones">
+          <button type="button" class="opcion si" data-q="3" data-val="1">✓ Sí</button>
+          <button type="button" class="opcion no" data-q="3" data-val="0">✗ No</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÁREA 2 -->
+    <div class="area">
+      <div class="area-header">
+        <span class="area-icon">🗣️</span>
+        <span class="area-title">Área 2 — Presencia Emocional y Empatía</span>
+      </div>
+
+      <div class="pregunta" data-area="2">
+        <p>4. ¿Guardas el teléfono de forma inmediata cuando un hijo, alumno o colega se acerca a hablarte?</p>
+        <div class="opciones">
+          <button type="button" class="opcion si" data-q="4" data-val="1">✓ Sí</button>
+          <button type="button" class="opcion no" data-q="4" data-val="0">✗ No</button>
+        </div>
+      </div>
+
+      <div class="pregunta" data-area="2">
+        <p>5. ¿Logras disfrutar una comida familiar o con amigos manteniendo el celular completamente fuera de la mesa?</p>
+        <div class="opciones">
+          <button type="button" class="opcion si" data-q="5" data-val="1">✓ Sí</button>
+          <button type="button" class="opcion no" data-q="5" data-val="0">✗ No</button>
+        </div>
+      </div>
+
+      <div class="pregunta" data-area="2">
+        <p>6. ¿Consideras el estado de ánimo o la privacidad de los demás antes de publicar una fotografía de ellos en tus redes sociales?</p>
+        <div class="opciones">
+          <button type="button" class="opcion si" data-q="6" data-val="1">✓ Sí</button>
+          <button type="button" class="opcion no" data-q="6" data-val="0">✗ No</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÁREA 3 -->
+    <div class="area">
+      <div class="area-header">
+        <span class="area-icon">⚖️</span>
+        <span class="area-title">Área 3 — Corresponsabilidad Ética</span>
+      </div>
+
+      <div class="pregunta" data-area="3">
+        <p>7. ¿Verificas la veracidad de una noticia en fuentes confiables antes de compartirla en tus grupos de WhatsApp o redes?</p>
+        <div class="opciones">
+          <button type="button" class="opcion si" data-q="7" data-val="1">✓ Sí</button>
+          <button type="button" class="opcion no" data-q="7" data-val="0">✗ No</button>
+        </div>
+      </div>
+
+      <div class="pregunta" data-area="3">
+        <p>8. ¿Intervienes o reportas la situación cuando eres testigo de comentarios ofensivos o acoso en un entorno virtual?</p>
+        <div class="opciones">
+          <button type="button" class="opcion si" data-q="8" data-val="1">✓ Sí</button>
+          <button type="button" class="opcion no" data-q="8" data-val="0">✗ No</button>
+        </div>
+      </div>
+
+      <div class="pregunta" data-area="3">
+        <p>9. ¿Tratas a las personas en entornos virtuales con el mismo respeto con el que las tratas en el mundo físico?</p>
+        <div class="opciones">
+          <button type="button" class="opcion si" data-q="9" data-val="1">✓ Sí</button>
+          <button type="button" class="opcion no" data-q="9" data-val="0">✗ No</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÁREA 4 -->
+    <div class="area">
+      <div class="area-header">
+        <span class="area-icon">📜</span>
+        <span class="area-title">Área 4 — Co-creación de Límites Colectivos</span>
+      </div>
+
+      <div class="pregunta" data-area="4">
+        <p>10. ¿Involucras a tus hijos o alumnos al momento de establecer las reglas y horarios del uso de la tecnología?</p>
+        <div class="opciones">
+          <button type="button" class="opcion si" data-q="10" data-val="1">✓ Sí</button>
+          <button type="button" class="opcion no" data-q="10" data-val="0">✗ No</button>
+        </div>
+      </div>
+
+      <div class="pregunta" data-area="4">
+        <p>11. ¿Respetas tú mismo los acuerdos y zonas libres de pantallas definidas en el hogar o el aula?</p>
+        <div class="opciones">
+          <button type="button" class="opcion si" data-q="11" data-val="1">✓ Sí</button>
+          <button type="button" class="opcion no" data-q="11" data-val="0">✗ No</button>
+        </div>
+      </div>
+
+      <div class="pregunta" data-area="4">
+        <p>12. ¿Estás abierto a negociar y modificar los reglamentos tecnológicos cuando tu familia o alumnos te lo proponen con argumentos?</p>
+        <div class="opciones">
+          <button type="button" class="opcion si" data-q="12" data-val="1">✓ Sí</button>
+          <button type="button" class="opcion no" data-q="12" data-val="0">✗ No</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="aviso-incompleto" id="aviso">Por favor responde todas las preguntas antes de calcular tu resultado.</div>
+    <button type="button" class="btn-calcular" id="btnCalcular">Ver mi resultado</button>
+  </form>
+
+  <div id="resultado">
+    <div class="resultado-header" id="resultado-header">
+      <div class="puntaje" id="puntaje-num"></div>
+      <div class="de12">de 12 puntos</div>
+      <div class="nivel" id="nivel-texto"></div>
+    </div>
+    <div class="resultado-body">
+      <p id="descripcion-nivel"></p>
+      <div class="areas-detalle" id="areas-detalle"></div>
+      <div class="firma">
+        <p>Dr. José Manuel Ramírez Aranda · Médico Familiar e Investigador · UANL</p>
+        <p><a href="https://rigormetodologico.com" target="_blank">rigormetodologico.com</a> · El método es tan importante como la pregunta de investigación</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const respuestas = {};
+  const areaScores = {1:0, 2:0, 3:0, 4:0};
+  const areaNombres = {
+    1: '🌐 Autonomía',
+    2: '🗣️ Presencia Emocional',
+    3: '⚖️ Corresponsabilidad Ética',
+    4: '📜 Co-creación de Límites'
+  };
+
+  document.querySelectorAll('.opcion').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const q = btn.dataset.q;
+      const val = parseInt(btn.dataset.val);
+      respuestas[q] = val;
+      const padre = btn.closest('.opciones');
+      padre.querySelectorAll('.opcion').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+  });
+
+  document.getElementById('btnCalcular').addEventListener('click', () => {
+    if (Object.keys(respuestas).length < 12) {
+      document.getElementById('aviso').style.display = 'block';
+      return;
+    }
+    document.getElementById('aviso').style.display = 'none';
+
+    let total = 0;
+    for (let i = 1; i <= 12; i++) total += respuestas[i] || 0;
+
+    // Área scores
+    areaScores[1] = (respuestas[1]||0)+(respuestas[2]||0)+(respuestas[3]||0);
+    areaScores[2] = (respuestas[4]||0)+(respuestas[5]||0)+(respuestas[6]||0);
+    areaScores[3] = (respuestas[7]||0)+(respuestas[8]||0)+(respuestas[9]||0);
+    areaScores[4] = (respuestas[10]||0)+(respuestas[11]||0)+(respuestas[12]||0);
+
+    const header = document.getElementById('resultado-header');
+    const puntaje = document.getElementById('puntaje-num');
+    const nivelTexto = document.getElementById('nivel-texto');
+    const desc = document.getElementById('descripcion-nivel');
+
+    puntaje.textContent = total;
+
+    if (total >= 10) {
+      header.className = 'resultado-header nivel-alto';
+      nivelTexto.textContent = 'Ciudadano Digital Activo';
+      desc.textContent = 'Eres un referente en tu entorno. Tienes las herramientas para guiar a las nuevas generaciones con el ejemplo. Tu mayor aportación es modelar estos comportamientos de forma consistente.';
+    } else if (total >= 6) {
+      header.className = 'resultado-header nivel-medio';
+      nivelTexto.textContent = 'Usuario en Transición';
+      desc.textContent = 'Tienes buenas intenciones y conciencia digital, pero la pantalla aún interrumpe tus momentos de convivencia real. Identificar el área más débil es el primer paso para mejorar.';
+    } else {
+      header.className = 'resultado-header nivel-bajo';
+      nivelTexto.textContent = 'Alerta de Dependencia';
+      desc.textContent = 'Es momento de detenerse y reflexionar. La dependencia digital no solo afecta tu bienestar — también modela lo que observan quienes te rodean. Pequeños cambios de hábito tienen gran impacto.';
+    }
+
+    const detalle = document.getElementById('areas-detalle');
+    detalle.innerHTML = '';
+    for (let a = 1; a <= 4; a++) {
+      const pct = Math.round((areaScores[a]/3)*100);
+      detalle.innerHTML += `
+        <div class="area-barra">
+          <div class="area-barra-label">${areaNombres[a]}</div>
+          <div class="barra-fondo"><div class="barra-fill" style="width:${pct}%"></div></div>
+          <div class="area-barra-num">${areaScores[a]}/3</div>
+        </div>`;
+    }
+
+    document.getElementById('resultado').style.display = 'block';
+    document.getElementById('resultado').scrollIntoView({behavior:'smooth'});
+  });
+</script>
+</body>
+</html>
